@@ -1,0 +1,84 @@
+# ai-toolkit training config — personal LoRA on Flux.2 [dev]
+# Run from the ai-toolkit repo root after symlinking or copying this file:
+#   python run.py /path/to/time-travelling-persona/configs/ai_toolkit/flux2_lora_train.yaml
+#
+# IMPORTANT: ai-toolkit's Flux.2 schema may evolve. If keys here don't match the
+# current ai-toolkit, copy fields from ai-toolkit/config/examples/train_lora_flux2_24gb.yaml
+# (or whichever Flux.2 example exists in your ai-toolkit checkout) and merge.
+#
+# Hardware notes:
+#   - 24 GB VRAM (RTX 3090/4090): set quantize=true, gradient_checkpointing=true.
+#   - 48 GB VRAM (A6000/A100): can disable quantize for slightly better quality.
+#   - H100 80GB: ~1 GPU-hour for 2000 steps.
+
+---
+job: extension
+config:
+  name: "time_travel_persona_v1"
+  process:
+    - type: "sd_trainer"
+      training_folder: "output"
+      device: cuda:0
+
+      # The token you'll prompt with later. Use a rare string so it doesn't
+      # collide with anything in the base model's vocabulary.
+      trigger_word: "dkm_person"
+
+      network:
+        type: "lora"
+        linear: 32           # LoRA rank. 32 is a good balance; 16 for tighter, 64 for richer.
+        linear_alpha: 32
+
+      save:
+        dtype: float16
+        save_every: 250
+        max_step_saves_to_keep: 4
+
+      datasets:
+        - folder_path: "/ABS/PATH/TO/time-travelling-persona/data/training_dataset"
+          caption_ext: "txt"
+          caption_dropout_rate: 0.05    # randomly drop captions 5% of the time
+          shuffle_tokens: false
+          cache_latents_to_disk: true
+          resolution: [1024]
+
+      train:
+        batch_size: 1
+        steps: 2000                     # 1500–2500 is the usable range. Watch sample images.
+        gradient_accumulation_steps: 1
+        train_unet: true
+        train_text_encoder: false
+        gradient_checkpointing: true
+        noise_scheduler: "flowmatch"
+        optimizer: "adamw8bit"
+        lr: 1e-4
+        ema_config:
+          use_ema: true
+          ema_decay: 0.99
+        dtype: bf16
+
+      model:
+        name_or_path: "black-forest-labs/FLUX.2-dev"
+        is_flux: true
+        quantize: true                  # set false on 48GB+ for marginally better quality
+
+      sample:
+        sampler: "flowmatch"
+        sample_every: 250
+        width: 1024
+        height: 1024
+        prompts:
+          - "[trigger] portrait, studio lighting, sharp focus, 50mm lens"
+          - "[trigger] as an astronaut floating outside a space station, cinematic lighting"
+          - "[trigger] in 1970s disco attire on a dance floor, soft film grain, 35mm"
+          - "[trigger] as an Edo-period samurai standing in a bamboo forest, traditional kimono"
+          - "[trigger] in a 2099 cyberpunk Tokyo street, neon reflections, rain"
+        neg: ""
+        seed: 42
+        walk_seed: true
+        guidance_scale: 4
+        sample_steps: 20
+
+meta:
+  name: "[name]"
+  version: "1.0"

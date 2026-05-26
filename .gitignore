@@ -1,0 +1,38 @@
+# Private face data — never commit
+data/source_photos/*
+data/training_dataset/*
+!data/source_photos/.gitkeep
+!data/training_dataset/.gitkeep
+
+# Generated outputs
+outputs/*
+!outputs/.gitkeep
+
+# Model weights (large, license-bound)
+models/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.gguf
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+
+# ai-toolkit / Comfy runtime
+output/
+ai-toolkit-output/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

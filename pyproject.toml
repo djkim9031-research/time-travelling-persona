@@ -1,0 +1,30 @@
+[project]
+name = "time-travelling-persona"
+version = "0.1.0"
+description = "Identity-preserved generative image/video pipeline using a personal LoRA + face adapter on Flux.2/Wan 2.2/Sonic."
+requires-python = ">=3.10"
+
+# Minimal deps for the scripts in this repo (dataset prep, env check).
+# Heavy deps (torch, diffusers, ai-toolkit, ComfyUI) are installed separately
+# per docs/02_setup_x86.md and docs/03_lora_training.md.
+dependencies = [
+    "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+# Optional: face-aware cropping during dataset prep.
+# mediapipe ships aarch64 wheels and works on Jetson Thor.
+face = [
+    "mediapipe>=0.10",
+    "numpy>=1.24",
+]
+
+# Optional: VLM auto-captioning during dataset prep.
+# Requires torch — install separately matching your platform.
+caption = [
+    "transformers>=4.40",
+    "accelerate>=0.30",
+]
+
+[tool.setuptools]
+py-modules = []
